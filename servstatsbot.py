@@ -19,7 +19,7 @@ import telepot
 
 
 memorythreshold = 85  # If memory usage more this %
-poll = 300  # seconds
+poll = 30  # seconds
 
 shellexecution = []
 timelist = []
@@ -190,5 +190,39 @@ while 1:
             for adminid in adminchatid:
                 bot.sendMessage(adminid, "CRITICAL! LOW MEMORY!\n" + memavail)
                 bot.sendPhoto(adminid, plotmemgraph(memlist, xaxis, tmperiod))
-    time.sleep(10)  # 10 seconds
+    time.sleep(30)  # 10 seconds
+    bot.sendChatAction(chat_id, 'typing')
+    memory = psutil.virtual_memory()
+    disk = psutil.disk_usage('/')
+    boottime = datetime.fromtimestamp(psutil.boot_time())
+    now = datetime.now()
+    timedif = "Online for: %.1f Hours" % (((now - boottime).total_seconds()) / 3600)
+    memtotal = "Total memory: %.2f GB " % (memory.total / 1000000000)
+    memavail = "Available memory: %.2f GB" % (memory.available / 1000000000)
+    memuseperc = "Used memory: " + str(memory.percent) + " %"
+    diskused = "Disk used: " + str(disk.percent) + " %"
+    pids = psutil.pids()
+    pidsreply = ''
+    procs = {}
+    for pid in pids:
+        p = psutil.Process(pid)
+        try:
+            pmem = p.memory_percent()
+            if pmem > 0.5:
+                if p.name() in procs:
+                    procs[p.name()] += pmem
+                else:
+                    procs[p.name()] = pmem
+        except:
+            print("Hm")
+    sortedprocs = sorted(procs.items(), key=operator.itemgetter(1), reverse=True)
+    for proc in sortedprocs:
+        pidsreply += proc[0] + " " + ("%.2f" % proc[1]) + " %\n"
+    reply = timedif + "\n" + \
+            memtotal + "\n" + \
+            memavail + "\n" + \
+            memuseperc + "\n" + \
+            diskused + "\n\n" + \
+            pidsreply
+    bot.sendMessage(chat_id, reply, disable_web_page_preview=True)
     tr += 10
