@@ -191,6 +191,7 @@ while 1:
                 bot.sendMessage(adminid, "CRITICAL! LOW MEMORY!\n" + memavail)
                 bot.sendPhoto(adminid, plotmemgraph(memlist, xaxis, tmperiod))
     time.sleep(30)  # 10 seconds
+    chat_id = "CHAT_ID"
     bot.sendChatAction(chat_id, 'typing')
     memory = psutil.virtual_memory()
     disk = psutil.disk_usage('/')
